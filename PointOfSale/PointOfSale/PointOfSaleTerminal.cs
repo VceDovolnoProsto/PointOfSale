@@ -10,18 +10,18 @@ namespace PointOfSale
     public class PointOfSaleTerminal
     {
         private readonly IBasket _basket = new Basket.Basket();
-        private readonly IStock _stockInfo = new Stock.Stock();
+        private readonly IStock _stock = new Stock.Stock();
 
         public void SetPricing(IEnumerable<IProduct> products)
         {
-            _stockInfo.AddProducts(products);
+            _stock.AddProducts(products);
         }
 
         public void Scan(string productCodes)
         {
             foreach (var productCode in productCodes.Select(code => code.ToString()))
             {
-                if (!_stockInfo.Items.ContainsKey(productCode))
+                if (!_stock.Items.ContainsKey(productCode))
                 {
                     throw new ArgumentException($"There is no such product {productCode} in stock");
                 }
@@ -36,7 +36,7 @@ namespace PointOfSale
 
             foreach (var (productCode, count) in _basket.Items)
             {
-                total += _stockInfo.Items[productCode].PriceCalculator.CalculatePrice(count);
+                total += _stock.Items[productCode].PriceCalculator.CalculatePrice(count);
             }
 
             return total;
