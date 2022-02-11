@@ -1,8 +1,8 @@
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;
-using PointOfSale.PriceCalculators;
-using PointOfSale.Product;
+using PointOfSale.Interfaces;
+using PointOfSale.Models;
 
 namespace PointOfSale.Test
 {
@@ -14,12 +14,17 @@ namespace PointOfSale.Test
         public void Setup()
         {
             // Arrange
-            var terminal = new PointOfSaleTerminal();
-            terminal.SetPricing(new List<IProduct>() {
-                new Product.Product() { UnitCode = "A", PriceCalculator = new WholesalePriceCalculator(1.25M, 3, 3M)},
-                new Product.Product() { UnitCode = "B", PriceCalculator = new SingleUnitPriceCalculator(4.25M) },
-                new Product.Product() { UnitCode = "C", PriceCalculator = new WholesalePriceCalculator(1M, 6, 5M)},
-                new Product.Product() { UnitCode = "D", PriceCalculator = new SingleUnitPriceCalculator(0.75M )},
+            var basket = new Basket();
+            var priceList = new PriceList();
+            var priceCalculator = new PriceCalculator();
+
+            var terminal = new PointOfSaleTerminal(basket, priceList, priceCalculator);
+            terminal.SetPricing(new List<IProduct>
+            {
+                new Product { UnitCode = "A", SingleUnitPrice = 1.25M, Discount = new Discount { Volume = 3, Price = 3M } },
+                new Product { UnitCode = "B", SingleUnitPrice = 4.25M },
+                new Product { UnitCode = "C", SingleUnitPrice = 1M, Discount = new Discount { Volume = 6, Price = 5M } },
+                new Product { UnitCode = "D", SingleUnitPrice = 0.75M }
             });
 
             _terminal = terminal;

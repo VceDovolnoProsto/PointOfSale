@@ -1,45 +1,38 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using PointOfSale.Basket;
-using PointOfSale.Product;
-using PointOfSale.Stock;
+using PointOfSale.Interfaces;
 
 namespace PointOfSale
 {
     public class PointOfSaleTerminal
     {
-        private readonly IBasket _basket = new Basket.Basket();
-        private readonly IStock _stock = new Stock.Stock();
+        private readonly IBasket _basket;
+        private readonly IPriceList _priceList;
+        private readonly IPriceCalculator _priceCalculator;
+
+        public PointOfSaleTerminal(IBasket basket, IPriceList priceList, IPriceCalculator priceCalculator)
+        {
+            _basket = basket;
+            _priceList = priceList;
+            _priceCalculator = priceCalculator;
+        }
 
         public void SetPricing(IEnumerable<IProduct> products)
         {
-            _stock.AddProducts(products);
+            _priceList.AddPrices(products);
         }
 
         public void Scan(string productCodes)
         {
             foreach (var productCode in productCodes.Select(code => code.ToString()))
             {
-                if (!_stock.Items.ContainsKey(productCode))
-                {
-                    throw new ArgumentException($"There is no such product {productCode} in stock");
-                }
-
-                _basket.Add(productCode);
+                _basket.AddToBasket(productCode, _priceList.Prices);
             }
         }
 
         public decimal CalculateTotal()
         {
-            var total = 0.0M;
-
-            foreach (var (productCode, count) in _basket.Items)
-            {
-                total += _stock.Items[productCode].PriceCalculator.CalculatePrice(count);
-            }
-
-            return total;
+            return _priceCalculator.CalculatePrice(_basket.Products, _priceList.Prices);
         }
     }
 }
